@@ -188,6 +188,7 @@
             
             if (viewName === 'list-machines') updateInventory();
             if (viewName === 'cvi') updateCVIList();
+            chargerMachinesDepuisGitHub();
         }
 
         function updateInventory() {
@@ -437,50 +438,25 @@
             
             updateInventory();
         }
-
-async function testGitHubLoad() {
-    const url = "https://raw.githubusercontent.com/Axitest94100/inventaire-machines/main/data/machines.json";
-    try {
-        const response = await fetch(url);
-        console.log("Status:", response.status);
-        const text = await response.text();
-        console.log("Contenu:", text);
-        const data = JSON.parse(text);
-        console.log("JSON parsé:", data);
-    } catch (error) {
-        console.error("Erreur de test:", error);
-    }
-}
-testGitHubLoad();
         async function chargerMachinesDepuisGitHub() {
             try {
-                const res = await fetch("https://raw.githubusercontent.com/Axitest94100/inventaire-machines/main/data/machines.json");
-                if (!res.ok) throw new Error("Erreur de réseau");
-                
-                const data = await res.json();
-                if (data.content) {
-                    const json = atob(data.content);
-                    machines = JSON.parse(json);
-                    saveMachines();
-                    console.log("Données chargées depuis GitHub");
-                    
-                    // Calculate emplacement for each machine
-                    machines.forEach(machine => {
-                        if (Array.isArray(machine.unites)) {
-                            const uniquePositions = [...new Set(
-                                machine.unites
-                                    .map(u => u.position?.trim())
-                                    .filter(Boolean)
-                            )];
-                            machine.emplacement = uniquePositions.join(" + ");
-                        }
-                    });
-                }
-            } catch (e) {
-                console.error("Erreur lors du chargement des données:", e);
-                showAlert("Erreur lors du chargement des données depuis GitHub. Utilisation des données locales.", "warning");
-                machines = JSON.parse(localStorage.getItem('machines')) || [];
-            }
+        			const res = await fetch("https://raw.githubusercontent.com/Axitest94100/inventaire-machines/main/data/machines.json");
+        			const data = await res.json();
+        			const json = atob(data.content); 
+        			machines = JSON.parse(json);
+        			localStorage.setItem('machines', JSON.stringify(machines));
+        			console.log("Données chargées depuis GitHub");
+    			} catch (e) {
+        			showAlert("Erreur lors du chargement des données", "danger");
+        			machines = JSON.parse(localStorage.getItem('machines')) || [];
+    			}
+			    machines.forEach(machine=>{
+				    if (Array.isArray(machine.unites)){
+					    const uniquepositions=[...new Set(machine.unites.map(u => u.position?.trim()).filter(Boolean))];
+					    machine.emplacement = uniquepositions.join("+");
+			
+				    }
+			    });
         }
 
         function envoyerVersGitHub(data) {
