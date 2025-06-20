@@ -354,9 +354,6 @@
                     <textarea class="form-control" id="modal-description" rows="4" readonly>${machine.description || ''}</textarea>
                     <div class="form-text mt-1">Aperçu : <span id="description-preview"></span></div>
                 </div>
-                <div class="d-flex justify-content-between mt-3">
-                    <button class="btn btn-primary" onclick="showView('list-machines')">Retour</button>
-                </div>
             `;
             
             document.getElementById('description-preview').innerHTML = rendreCliquable(machine.description || "");
