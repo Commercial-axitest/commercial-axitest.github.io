@@ -75,16 +75,27 @@
         <div id="list-machines-view" class="view hidden">
             <h2>Inventaire des Machines</h2>
             <div class="table-responsive">
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <h5>Recherche manuelle</h5>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="manual-search" placeholder="Marque ou modèle">
-                            <button class="btn btn-primary" type="button" onclick="manualSearch()">Rechercher</button>
-                        </div>
-                        <div id="search-results" class="mt-3"></div>
-                    </div>
-                </div>
+               <div class="card mt-3">
+  			<div class="card-body">
+    				<h5>Recherche manuelle</h5>
+    				<div class="row g-2 align-items-center">
+      					<div class="col-md-4">
+        					<select class="form-select" id="search-type">
+          						<option value="model">Marque / Modèle</option>
+          						<option value="numserie">Numéro de série</option>
+        					</select>
+      					</div>
+      					<div class="col-md-6">
+        					<input type="text" class="form-control" id="manual-search" placeholder="Rechercher une marque/modèle ou un numéro de série">
+      					</div>
+      					<div class="col-md-2 d-grid">
+        					<button class="btn btn-primary" type="button" onclick="manualSearch()">Rechercher</button>
+      					</div>
+    				</div>
+    				<div id="search-results" class="mt-4"></div>
+  			</div>
+		</div>
+
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -408,6 +419,7 @@
 
         function manualSearch() {
             const query = document.getElementById('manual-search').value.trim().toLowerCase();
+	    const searchType =document.getElementById('search-type').value;
             const resultsContainer = document.getElementById('search-results');
             resultsContainer.innerHTML = '';
 
@@ -415,13 +427,16 @@
                 showAlert('Veuillez entrer un terme de recherche.', 'warning');
                 return;
             }
-
-            const results = machines.map((m, i) => ({ machine: m, index: i }))
-                .filter(({ machine }) => 
-                    (machine.marque && machine.marque.toLowerCase().includes(query)) ||
+	    let results = []
+	    if (searchType === 'model'){ results = machines.map((m, i) => ({ machine: m, index: i })).filter(({ machine }) => (machine.marque && machine.marque.toLowerCase().includes(query)) ||
                     (machine.model && machine.model.toLowerCase().includes(query))
                 );
-
+	    } else if (searchType==='numserie') { results = machines.flatMap((machine, index) => { 
+		if (!Array.isArray(machine.unites)) return [];
+		return machine.unites.filter(unit =>unit.numserie && unit.numserie.toLowerCase().includes(query)).map(unit=> ({machine, index}));
+		});
+	   }
+				
             if (results.length === 0) {
                 resultsContainer.innerHTML = '<div class="alert alert-warning">Aucun résultat trouvé</div>';
                 return;
